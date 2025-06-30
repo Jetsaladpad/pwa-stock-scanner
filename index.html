@@ -1,101 +1,48 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>เมนูหลัก - ระบบอู่ช่างสิทธิ์</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: "Segoe UI", Tahoma, sans-serif;
-      background: #f0f0f0;
-    }
-    .container {
-      max-width: 1000px;
-      margin: 40px auto;
-      padding: 20px;
-      text-align: center;
-    }
-    h1 {
-      font-size: 32px;
-      color: #333;
-      margin-bottom: 40px;
-    }
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 20px;
-      justify-content: center;
-    }
-    .menu-item {
-      background: white;
-      padding: 25px 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.2s;
-    }
-    .menu-item:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    }
-    .menu-icon {
-      font-size: 40px;
-      margin-bottom: 10px;
-      color: #007BFF;
-    }
-    .menu-text {
-      font-size: 18px;
-      color: #333;
-    }
-  </style>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-  <div class="container">
-    <h1>🚗 ระบบอู่ช่างสิทธิ์</h1>
-    <div class="menu-grid">
-      <div class="menu-item" onclick="location.href='part_sale_add.html'">
-        <div class="menu-icon">📦</div>
-        <div class="menu-text">ขายอะไหล่</div>
-      </div>
-      <div class="menu-item" onclick="location.href='add_repair.html'">
-        <div class="menu-icon">🛠️</div>
-        <div class="menu-text">เพิ่มงานซ่อม</div>
-      </div>
-      <div class="menu-item" onclick="location.href='repair_list.html'">
-        <div class="menu-icon">🔍</div>
-        <div class="menu-text">ดูงานซ่อม</div>
-      </div>
-      <div class="menu-item" onclick="location.href='customer_list.html'">
-        <div class="menu-icon">👤</div>
-        <div class="menu-text">รายชื่อลูกค้า</div>
-      </div>
-      <div class="menu-item" onclick="location.href='stock_list.html'">
-        <div class="menu-icon">📋</div>
-        <div class="menu-text">สต๊อกอะไหล่</div>
-      </div>
-      <div class="menu-item" onclick="location.href='cash_bill.html'">
-        <div class="menu-icon">💵</div>
-        <div class="menu-text">บิลเงินสด</div>
-      </div>
-      <div class="menu-item" onclick="location.href='invoice_summary.html'">
-        <div class="menu-icon">📑</div>
-        <div class="menu-text">ใบวางบิล</div>
-      </div>
-      <div class="menu-item" onclick="location.href='profit_report.html'">
-        <div class="menu-icon">📈</div>
-        <div class="menu-text">สรุปกำไรขาดทุน</div>
-      </div>
-      <div class="menu-item" onclick="location.href='repair_history.html'">
-        <div class="menu-icon">🕘</div>
-        <div class="menu-text">ประวัติการซ่อม</div>
-      </div>
-      <!-- ✅ เมนูใหม่: เพิ่มอะไหล่ด้วยการสแกน -->
-      <div class="menu-item" onclick="location.href='stock_add_scan.html'">
-        <div class="menu-icon">📷</div>
-        <div class="menu-text">สแกนเพิ่มอะไหล่</div>
-      </div>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="text-center">
+    <h1 class="text-3xl font-bold mb-8">🚗 ระบบอู่ช่างสิทธิ์</h1>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-xl mx-auto">
+      <a href="part_sale_add.html" class="p-4 bg-white rounded-xl shadow hover:bg-blue-100 transition">
+        📦<div>ขายอะไหล่</div>
+      </a>
+      <a href="add_repair.html" class="p-4 bg-white rounded-xl shadow hover:bg-blue-100 transition">
+        🔧<div>เพิ่มงานซ่อม</div>
+      </a>
+      <a href="repair_list.html" class="p-4 bg-white rounded-xl shadow hover:bg-blue-100 transition">
+        🔍<div>ดูงานซ่อม</div>
+      </a>
+      <a href="customer_list.html" class="p-4 bg-white rounded-xl shadow hover:bg-blue-100 transition">
+        👤<div>รายชื่อลูกค้า</div>
+      </a>
+      <a href="stock_list.html" class="p-4 bg-white rounded-xl shadow hover:bg-blue-100 transition">
+        📋<div>สต๊อกอะไหล่</div>
+      </a>
+      <a href="stock_add_scan.html" class="p-4 bg-white rounded-xl shadow hover:bg-green-100 transition">
+        📷<div>สแกนเพิ่มอะไหล่</div>
+      </a>
+      <a href="cash_bill.html" class="p-4 bg-white rounded-xl shadow hover:bg-blue-100 transition">
+        💵<div>บิลเงินสด</div>
+      </a>
+      <a href="invoice.html" class="p-4 bg-white rounded-xl shadow hover:bg-blue-100 transition">
+        📄<div>ใบวางบิล</div>
+      </a>
+      <a href="summary.html" class="p-4 bg-white rounded-xl shadow hover:bg-blue-100 transition">
+        📊<div>สรุปกำไรขาดทุน</div>
+      </a>
+      <a href="repair_history.html" class="p-4 bg-white rounded-xl shadow hover:bg-blue-100 transition">
+        🕓<div>ประวัติการซ่อม</div>
+      </a>
     </div>
+    <p class="mt-10 text-sm text-gray-500">© 2025 JETSALADPAD</p>
   </div>
 </body>
 </html>
