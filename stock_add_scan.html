@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เพิ่มอะไหล่ด้วยบาร์โค้ด</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 p-4">
+  <div class="flex justify-between items-center mb-4">
+    <h1 class="text-xl font-bold">📦 เพิ่มอะไหล่ด้วยบาร์โค้ด</h1>
+    <a href="index.html" class="text-blue-600 hover:underline">← กลับเมนูหลัก</a>
+  </div>
+
+  <button onclick="startScan()" class="bg-green-600 text-white px-4 py-2 rounded">📷 สแกนบาร์โค้ด</button>
+  <div id="reader" style="width: 300px; display: none;" class="mt-4"></div>
+
+  <div class="mt-4 text-sm">
+    <p>ผลลัพธ์ล่าสุด: <span id="lastCode" class="font-semibold text-blue-600"></span></p>
+  </div>
+
+  <div id="manualInputs" class="mt-4 hidden space-y-2">
+    <input id="inputQty" type="number" placeholder="จำนวน" class="border p-2 rounded w-full">
+    <input id="inputPrice" type="number" placeholder="ราคา" class="border p-2 rounded w-full">
+    <button onclick="saveToStock()" class="bg-blue-600 text-white px-4 py-1 rounded">💾 บันทึกเข้าสต๊อก</button>
+  </div>
+
+  <hr class="my-6">
+  <h2 class="text-lg font-bold mb-2">📋 รายการอะไหล่ในระบบ</h2>
+  <div id="stockList" class="space-y-2"></div>
+
+  <script>
+    let scannedCode = "";
+
+    function startScan() {
+      const reader = document.getElementById("reader");
+      reader.style.display = "block";
+      const scanner = new Html5Qrcode("reader");
+
+      scanner.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: 250 },
+        (code) => {
+          scanner.stop();
+          reader.style.display = "none";
+          scannedCode = code;
+          document.getElementById("lastCode").textContent = code;
+          document.getElementById("manualInputs").classList.remove("hidden");
+        },
+        (err) => {}
+      ).catch(err => alert("ไม่สามารถเปิดกล้อง: " + err));
+    }
+
+    function saveToStock() {
+      const qty = parseInt(document.getElementById("inputQty").value);
+      const price = parseFloat(document.getElementById("inputPrice").value);
+      if (!qty || isNaN(price)) return alert("กรุณากรอกจำนวนและราคาให้ครบ");
+
+      let stock = JSON.parse(localStorage.getItem("stock") || "[]");
+      if (!stock.find(item => item.code === scannedCode)) {
+        stock.push({ code: scannedCode, name: scannedCode, qty, price });
+        localStorage.setItem("stock", JSON.stringify(stock));
+        alert("✅ เพิ่มอะไหล่เข้าระบบแล้ว: " + scannedCode);
+        document.getElementById("manualInputs").classList.add("hidden");
+        document.getElementById("inputQty").value = "";
+        document.getElementById("inputPrice").value = "";
+        renderStockList();
+      } else {
+        alert("ℹ️ อะไหล่นี้มีอยู่ในระบบแล้ว");
+      }
+    }
+
+    function renderStockList() {
+      const container = document.getElementById("stockList");
+      container.innerHTML = "";
+      const stock = JSON.parse(localStorage.getItem("stock") || "[]");
+      if (stock.length === 0) {
+        container.innerHTML = '<p class="text-gray-500">ยังไม่มีรายการในสต๊อก</p>';
+        return;
+      }
+      stock.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "bg-white p-2 rounded shadow flex justify-between items-center";
+        div.innerHTML = `
+          <div>
+            <div class="font-semibold">${item.name}</div>
+            <div class="text-sm text-gray-600">จำนวน: ${item.qty} | ราคา: ${item.price} บาท</div>
+          </div>
+          <button onclick="deleteStock(${index})" class="text-red-600">ลบ</button>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    function deleteStock(index) {
+      if (!confirm("ยืนยันลบอะไหล่ชิ้นนี้?")) return;
+      let stock = JSON.parse(localStorage.getItem("stock") || "[]");
+      stock.splice(index, 1);
+      localStorage.setItem("stock", JSON.stringify(stock));
+      renderStockList();
+    }
+
+    renderStockList();
+  </script>
+</body>
+</html>
