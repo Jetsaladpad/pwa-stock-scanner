@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>บิลเงินสด</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-gray-800">
+  <div class="p-4 flex justify-between items-center">
+    <a href="repair_list.html" class="text-blue-600 hover:underline text-sm">← กลับไปหน้าดูงานซ่อม</a>
+    <a href="repair_history.html" class="text-blue-600 hover:underline text-sm">→ ไปหน้าประวัติการซ่อม</a>
+  </div>
+
+  <div class="max-w-4xl mx-auto bg-white p-6 shadow">
+    <h2 id="billHeader" class="text-center text-green-600 font-bold text-lg">บิลเงินสด</h2>
+    <h3 class="text-center text-blue-800 font-bold text-xl">อู่ช่างสิทธิ์</h3>
+    <p class="text-center text-sm">264 หมู่ 2 ตำบลแม่กุ อำเภอแม่สอด จังหวัดตาก 63110<br>โทร: 096-8269966, 095-5592266</p>
+
+    <div class="grid grid-cols-2 gap-4 mt-6">
+      <div>
+        <p><strong>เลขที่บิล:</strong> <span id="billNo">INV-000</span></p>
+        <p><strong>นาม:</strong> <span id="customerName"></span></p>
+        <p><strong>ที่อยู่:</strong> <span id="customerAddress"></span></p>
+        <p><strong>ทะเบียน:</strong> <span id="customerLicense"></span></p>
+      </div>
+      <div class="text-right">
+        <p><strong>วันที่:</strong> <span id="billDate"></span></p>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto mt-6">
+      <table class="w-full text-sm text-center border">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="border p-2">จำนวน</th>
+            <th class="border p-2">รายการ</th>
+            <th class="border p-2">จำนวนเงิน</th>
+            <th class="border p-2">ลบ</th>
+          </tr>
+        </thead>
+        <tbody id="partList"></tbody>
+      </table>
+
+      <div class="flex gap-2 mt-2">
+        <input id="partQty" type="number" class="border p-1 rounded w-20" placeholder="จำนวน">
+        <input id="partName" type="text" class="border p-1 rounded flex-1" placeholder="ชื่ออะไหล่">
+        <input id="partPrice" type="number" class="border p-1 rounded w-24" placeholder="ราคา">
+        <button onclick="addPart()" class="bg-green-600 text-white px-4 rounded">➕ เพิ่ม</button>
+      </div>
+
+      <div class="mt-4 text-right">
+        <p>ราคาสินค้า: <span id="totalPrice">0.00</span> บาท</p>
+        <p id="vatLine" class="hidden">ภาษีมูลค่าเพิ่ม 7%: <span id="vatAmount">0.00</span> บาท</p>
+        <p class="font-bold text-lg">รวมทั้งสิ้น: <span id="grandTotal">0.00</span> บาท</p>
+        <p class="text-sm italic text-gray-500">(<span id="amountText">ศูนย์บาทถ้วน</span>)</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 mt-6">
+      <div class="text-center">
+        <div class="border-t mt-8"><span id="signLabel">ผู้รับเงิน</span></div>
+      </div>
+      <div class="text-center">
+        <div class="border-t mt-8" id="senderSign">ผู้ส่งของ</div>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <textarea id="billNote" class="border rounded w-full p-2 h-16"></textarea>
+    </div>
+
+    <div class="flex justify-between items-center mt-6">
+      <select id="billType" class="border p-1 rounded" onchange="updateBillType()">
+        <option value="บิลเงินสด">บิลเงินสด</option>
+        <option value="ใบส่งของ">ใบส่งของ</option>
+      </select>
+      <div class="space-x-2">
+        <button onclick="printPDF()" class="bg-blue-600 text-white px-4 py-1 rounded">🖨 พิมพ์ / บันทึก PDF</button>
+        <button onclick="completePayment()" class="bg-green-600 text-white px-4 py-1 rounded">✅ ชำระเงินเสร็จสิ้น</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let parts = [];
+    let selectedRepair = {};
+
+    function renderParts() {
+      const tbody = document.getElementById("partList");
+      tbody.innerHTML = "";
+      let subtotal = 0;
+
+      parts.forEach((p, i) => {
+        const sum = p.qty * p.price;
+        subtotal += sum;
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class='border p-1'><input type='number' value='${p.qty}' class='w-16 text-center' onchange='updatePart(${i}, "qty", this.value)'></td>
+          <td class='border p-1'><input type='text' value='${p.name}' class='w-full text-left' onchange='updatePart(${i}, "name", this.value)'></td>
+          <td class='border p-1'><input type='number' value='${p.price}' class='w-24 text-right' onchange='updatePart(${i}, "price", this.value)'></td>
+          <td class='border p-1'><button onclick='removePart(${i})' class='text-red-600'>ลบ</button></td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      const billType = document.getElementById("billType").value;
+      let vat = 0;
+      if (billType === "ใบส่งของ") {
+        vat = subtotal * 0.07;
+        document.getElementById("vatLine").classList.remove("hidden");
+        document.getElementById("vatAmount").textContent = vat.toFixed(2);
+      } else {
+        document.getElementById("vatLine").classList.add("hidden");
+      }
+
+      const total = subtotal + vat;
+      document.getElementById("totalPrice").textContent = subtotal.toFixed(2);
+      document.getElementById("grandTotal").textContent = total.toFixed(2);
+      document.getElementById("amountText").textContent = "บาทถ้วน";
+    }
+
+    function addPart() {
+      const qty = parseInt(document.getElementById("partQty").value);
+      const name = document.getElementById("partName").value.trim();
+      const price = parseFloat(document.getElementById("partPrice").value);
+      if (!qty || !name || !price) return alert("กรอกข้อมูลให้ครบ");
+      parts.push({ qty, name, price });
+      document.getElementById("partQty").value = "";
+      document.getElementById("partName").value = "";
+      document.getElementById("partPrice").value = "";
+      renderParts();
+    }
+
+    function updatePart(i, field, value) {
+      parts[i][field] = field === "qty" || field === "price" ? parseFloat(value) : value;
+      renderParts();
+    }
+
+    function removePart(i) {
+      parts.splice(i, 1);
+      renderParts();
+    }
+
+    function printPDF() {
+      window.print();
+    }
+
+    function completePayment() {
+      const total = parts.reduce((sum, p) => sum + (p.qty * p.price), 0);
+      selectedRepair.usedParts = parts;
+      selectedRepair.status = "เสร็จสิ้น";
+      selectedRepair.total = total;
+
+      let repairs = JSON.parse(localStorage.getItem("repairs") || "[]");
+      repairs = repairs.filter(r => !(r.date === selectedRepair.date && r.name === selectedRepair.name));
+      localStorage.setItem("repairs", JSON.stringify(repairs));
+
+      let history = JSON.parse(localStorage.getItem("repairHistory") || "[]");
+      history.push(selectedRepair);
+      localStorage.setItem("repairHistory", JSON.stringify(history));
+
+      alert("บันทึกการชำระเงินเรียบร้อยแล้ว");
+      window.location.href = "repair_history.html";
+    }
+
+    function updateBillType() {
+      const type = document.getElementById("billType").value;
+      document.getElementById("billHeader").textContent = type;
+      document.getElementById("signLabel").textContent = type === "ใบส่งของ" ? "ผู้รับของ" : "ผู้รับเงิน";
+      document.getElementById("senderSign").style.visibility = type === "ใบส่งของ" ? "visible" : "hidden";
+      renderParts();
+    }
+
+    window.onload = () => {
+      selectedRepair = JSON.parse(localStorage.getItem("selectedRepair") || "{}");
+      if (selectedRepair.name) document.getElementById("customerName").textContent = selectedRepair.name;
+      if (selectedRepair.address) document.getElementById("customerAddress").textContent = selectedRepair.address;
+      if (selectedRepair.license) document.getElementById("customerLicense").textContent = selectedRepair.license;
+      if (selectedRepair.date) document.getElementById("billDate").textContent = selectedRepair.date;
+      else document.getElementById("billDate").textContent = new Date().toISOString().split("T")[0];
+
+      if (selectedRepair.usedParts) {
+        parts = selectedRepair.usedParts.map(p => ({ qty: p.qty || 1, name: p.name, price: p.price || 0 }));
+        renderParts();
+      }
+      updateBillType();
+    }
+  </script>
+</body>
+</html>

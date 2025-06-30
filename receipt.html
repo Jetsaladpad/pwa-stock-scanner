@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>บิลเงินสด</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      background: #fff;
+      padding: 40px;
+      color: #000;
+      max-width: 800px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+      font-size: 28px;
+      color: #007BFF;
+      margin-bottom: 5px;
+    }
+    .shop-info {
+      text-align: center;
+      font-size: 14px;
+      margin-bottom: 15px;
+    }
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .customer-info {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #000;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
+    th {
+      background: #f0f0f0;
+    }
+    .total {
+      text-align: right;
+      font-size: 18px;
+      margin-top: 15px;
+    }
+    .signatures {
+      display: flex;
+      justify-content: center;
+      margin-top: 60px;
+      font-size: 14px;
+    }
+    .signature {
+      width: 45%;
+      text-align: center;
+    }
+    .signature-line {
+      border-bottom: 1px solid #000;
+      margin: 60px 0 5px;
+    }
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    .btn {
+      padding: 10px 16px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .btn:hover {
+      background: #0056b3;
+    }
+    @media print {
+      .button-group {
+        display: none;
+      }
+      body {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🧾 บิลเงินสด</h2>
+  <div class="shop-info">
+    อู่ช่างสิทธิ์<br>
+    264 หมู่ 2 ต.แม่กุ อ.แม่สอด จ.ตาก 63110<br>
+    โทร. 096-8269966, 095-5592266
+  </div>
+
+  <div class="info-row">
+    <div id="bill-no"></div>
+    <div id="date"></div>
+  </div>
+
+  <div class="customer-info" id="customer"></div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ชื่ออะไหล่</th>
+        <th>จำนวน</th>
+        <th>ราคา</th>
+        <th>รวม</th>
+      </tr>
+    </thead>
+    <tbody id="receipt-body"></tbody>
+  </table>
+
+  <div class="total" id="total"></div>
+
+  <div class="signatures">
+    <div class="signature">
+      <div class="signature-line"></div>
+      ผู้รับเงิน
+    </div>
+  </div>
+
+  <div class="button-group">
+    <button class="btn" onclick="window.print()">🖨️ พิมพ์บิลเงินสด</button>
+    <button class="btn" onclick="window.location.href='part_sale_add.html'">🔙 กลับไปแก้ไขบิล</button>
+  </div>
+
+  <script>
+    const data = JSON.parse(localStorage.getItem('last_receipt'));
+    if (!data) {
+      document.body.innerHTML = '<h2>ไม่พบข้อมูลบิล</h2>';
+    } else {
+      const billNo = 'BILL' + Date.now().toString().slice(-6);
+      document.getElementById('bill-no').innerText = 'เลขที่บิล: ' + billNo;
+
+      const today = new Date();
+      const dateStr = today.toLocaleDateString('th-TH');
+      document.getElementById('date').innerText = 'วันที่: ' + dateStr;
+
+      document.getElementById('customer').innerText = 'ลูกค้า: ' + data.customer_name;
+
+      const tbody = document.getElementById('receipt-body');
+      let total = 0;
+      data.items.forEach(item => {
+        const row = `<tr>
+          <td>${item.name}</td>
+          <td>${item.qty}</td>
+          <td>${item.sell_price}</td>
+          <td>${item.qty * item.sell_price}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+        total += item.qty * item.sell_price;
+      });
+      document.getElementById('total').innerText = 'รวมทั้งหมด: ' + total + ' บาท';
+    }
+  </script>
+
+</body>
+</html>

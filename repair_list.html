@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <title>รายการงานซ่อม</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-6">
+
+  <!-- ✅ ปุ่มกลับเมนูหลัก -->
+  <a href="index.html" class="inline-block bg-blue-100 text-blue-700 px-4 py-1 rounded hover:bg-blue-200 mb-4">← กลับเมนูหลัก</a>
+
+  <h1 class="text-2xl font-bold mb-4">รายการงานซ่อม</h1>
+
+  <div class="bg-white rounded shadow overflow-x-auto">
+    <table class="w-full table-auto border-collapse">
+      <thead class="bg-gray-200">
+        <tr>
+          <th class="p-2">นาม</th>
+          <th class="p-2">เบอร์โทร</th>
+          <th class="p-2">วันที่</th>
+          <th class="p-2">รายละเอียด</th>
+          <th class="p-2">อะไหล่</th>
+          <th class="p-2">สถานะ</th>
+          <th class="p-2">จัดการ</th>
+        </tr>
+      </thead>
+      <tbody id="repairTable"></tbody>
+    </table>
+  </div>
+
+  <!-- ✅ Modal จัดการอะไหล่ -->
+  <div id="partModal" class="fixed inset-0 bg-black bg-opacity-40 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 w-[90%] max-w-md">
+      <h2 class="text-xl font-bold mb-4">เพิ่มอะไหล่</h2>
+      <div id="partInputs" class="space-y-2"></div>
+      <button onclick="addPartInput()" class="text-blue-600 text-sm mt-2">+ เพิ่มรายการอะไหล่</button>
+      <div class="flex justify-end mt-4 space-x-2">
+        <button onclick="hideModal()" class="px-3 py-1 bg-gray-300 rounded">ยกเลิก</button>
+        <button onclick="confirmParts()" class="px-3 py-1 bg-blue-600 text-white rounded">บันทึก</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let repairs = JSON.parse(localStorage.getItem("repairs") || "[]");
+    let selectedIndex = null;
+
+    function renderTable() {
+      const table = document.getElementById("repairTable");
+      table.innerHTML = "";
+
+      repairs.forEach((r, i) => {
+        const tr = document.createElement("tr");
+        tr.className = "border-t";
+        const parts = (r.usedParts || []).map(p => `- ${p.name} x${p.qty || 1} (${p.price}฿)`).join("<br>");
+
+        const payButton = r.status === "เสร็จสิ้น"
+          ? '<span class="text-gray-400 italic text-sm">✔ ชำระแล้ว</span>'
+          : `<button onclick="payNow(${i})" class="bg-blue-500 text-white px-3 py-1 rounded mb-1">ชำระเงิน</button>`;
+
+        tr.innerHTML = `
+          <td class="p-2">${r.name || ""}</td>
+          <td class="p-2">${r.phone || ""}</td>
+          <td class="p-2">${r.date || ""}</td>
+          <td class="p-2">${r.problem || r.detail || "-"}</td>
+          <td class="p-2 text-sm">
+            ${parts || "-"}
+            <br>
+            <button onclick="openPartModal(${i})" class="text-green-600 text-sm hover:underline mt-1">✏️ เพิ่มอะไหล่</button>
+          </td>
+          <td class="p-2 ${r.status === 'เสร็จสิ้น' ? 'text-green-600' : 'text-orange-600'} font-semibold">${r.status || "ระหว่างซ่อม"}</td>
+          <td class="p-2 space-y-1">
+            ${payButton}<br>
+            <button onclick="deleteRepair(${i})" class="bg-red-500 text-white px-3 py-1 rounded">ลบ</button>
+          </td>
+        `;
+        table.appendChild(tr);
+      });
+    }
+
+    function openPartModal(index) {
+      selectedIndex = index;
+      const container = document.getElementById("partInputs");
+      container.innerHTML = "";
+
+      const currentParts = repairs[index].usedParts || [];
+      currentParts.forEach(p => {
+        addPartInput(p.name, p.price, p.qty || 1);
+      });
+
+      document.getElementById("partModal").classList.remove("hidden");
+    }
+
+    function addPartInput(name = "", price = "", qty = 1) {
+      const div = document.createElement("div");
+      div.className = "flex space-x-2 items-center";
+      div.innerHTML = `
+        <input type="text" placeholder="ชื่ออะไหล่" value="${name}" class="flex-1 p-1 border rounded" />
+        <input type="number" placeholder="จำนวน" value="${qty}" class="w-20 p-1 border rounded" />
+        <input type="number" placeholder="ราคา" value="${price}" class="w-24 p-1 border rounded" />
+        <button onclick="this.parentElement.remove()" class="text-red-600 text-sm">ลบ</button>
+      `;
+      document.getElementById("partInputs").appendChild(div);
+    }
+
+    function hideModal() {
+      document.getElementById("partModal").classList.add("hidden");
+    }
+
+    function confirmParts() {
+      const inputs = document.querySelectorAll("#partInputs > div");
+      const usedParts = [];
+      inputs.forEach(row => {
+        const name = row.children[0].value.trim();
+        const qty = parseInt(row.children[1].value.trim()) || 1;
+        const price = parseFloat(row.children[2].value.trim()) || 0;
+        if (name && !isNaN(price)) {
+          usedParts.push({ name, qty, price });
+        }
+      });
+
+      repairs[selectedIndex].usedParts = usedParts;
+      saveRepairs();
+      hideModal();
+      renderTable();
+    }
+
+    function saveRepairs() {
+      localStorage.setItem("repairs", JSON.stringify(repairs));
+    }
+
+    function payNow(index) {
+      localStorage.setItem("selectedRepair", JSON.stringify(repairs[index]));
+      window.location.href = "cash_bill.html";
+    }
+
+    function deleteRepair(index) {
+      if (confirm("ยืนยันการลบงานซ่อมนี้?")) {
+        repairs.splice(index, 1);
+        saveRepairs();
+        renderTable();
+      }
+    }
+
+    renderTable();
+  </script>
+</body>
+</html>

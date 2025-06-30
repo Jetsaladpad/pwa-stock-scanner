@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>เพิ่มงานซ่อม</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+  <div class="max-w-4xl mx-auto p-6 bg-white mt-10 rounded shadow">
+    <a href="index.html" class="text-blue-600 hover:underline block mb-4">← กลับเมนูหลัก</a>
+    <h2 class="text-xl font-bold mb-4">🔧 เพิ่มงานซ่อม</h2>
+    <form id="repairForm" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <input type="text" id="name" placeholder="ชื่อลูกค้า" class="border px-3 py-2 rounded" required>
+        <input type="text" id="phone" placeholder="เบอร์โทร" class="border px-3 py-2 rounded">
+        <input type="text" id="license" placeholder="ป้ายทะเบียนรถ" class="border px-3 py-2 rounded" required>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="date" id="date" class="border px-3 py-2 rounded" required>
+        <select id="vehicleType" class="border px-3 py-2 rounded" required>
+          <option value="">เลือกชนิดของรถ</option>
+          <option>รถยนต์</option>
+          <option>สิบล้อ</option>
+          <option>หกล้อ</option>
+          <option>แมคโคร</option>
+        </select>
+        <input type="text" id="brand" placeholder="ยี่ห้อรถ" class="border px-3 py-2 rounded" required>
+        <input type="text" id="model" placeholder="รุ่น / ซีเรียล (ถ้ามี)" class="border px-3 py-2 rounded">
+      </div>
+      <textarea id="problem" placeholder="อาการเสีย / รายละเอียดเพิ่มเติม" class="border px-3 py-2 rounded w-full"></textarea>
+      <textarea id="note" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)" class="border px-3 py-2 rounded w-full"></textarea>
+      <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">บันทึกงานซ่อม</button>
+    </form>
+  </div>
+  <script>
+    document.getElementById("repairForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const repair = {
+        name: document.getElementById("name").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        license: document.getElementById("license").value.trim(),
+        date: document.getElementById("date").value,
+        type: document.getElementById("vehicleType").value,
+        brand: document.getElementById("brand").value.trim(),
+        model: document.getElementById("model").value.trim(),
+        problem: document.getElementById("problem").value.trim(),
+        note: document.getElementById("note").value.trim(),
+        usedParts: [],
+        status: "ระหว่างซ่อม"
+      };
+      let repairs = JSON.parse(localStorage.getItem("repairs") || "[]");
+      repairs.push(repair);
+      localStorage.setItem("repairs", JSON.stringify(repairs));
+      alert("บันทึกงานซ่อมเรียบร้อยแล้ว");
+      window.location.href = "repair_list.html";
+    });
+  </script>
+</body>
+</html>

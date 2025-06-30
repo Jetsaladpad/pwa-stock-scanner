@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ประวัติการซ่อม</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="p-4">
+    <a href="index.html" class="text-blue-600 hover:underline text-sm">← กลับเมนูหลัก</a>
+  </div>
+
+  <div class="max-w-7xl mx-auto p-6 bg-white rounded-lg shadow-md">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-xl font-bold text-blue-600">🕘 ประวัติการซ่อม</h1>
+      <div class="text-right">
+        <span id="totalSummary" class="font-semibold text-sm text-gray-700"></span>
+      </div>
+    </div>
+
+    <div class="mb-4 flex gap-4 flex-wrap">
+      <label>เลือกเดือน:
+        <input type="month" id="monthFilter" class="border px-2 py-1 rounded">
+      </label>
+      <button onclick="filterHistory()" class="bg-blue-600 text-white px-4 py-1 rounded hover:bg-blue-700">แสดงผล</button>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full border-collapse text-sm">
+        <thead class="bg-gray-200">
+          <tr class="text-left">
+            <th class="p-2 border">#</th>
+            <th class="p-2 border">ลูกค้า</th>
+            <th class="p-2 border">ทะเบียน</th>
+            <th class="p-2 border">วันที่</th>
+            <th class="p-2 border">ชนิดรถ</th>
+            <th class="p-2 border">ยี่ห้อ</th>
+            <th class="p-2 border">อาการเสีย</th>
+            <th class="p-2 border">สถานะ</th>
+            <th class="p-2 border text-right">ยอดชำระ (บาท)</th>
+            <th class="p-2 border text-center">การจัดการ</th>
+          </tr>
+        </thead>
+        <tbody id="historyTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let allHistory = JSON.parse(localStorage.getItem("repairHistory") || "[]");
+
+    function filterHistory() {
+      const table = document.getElementById("historyTable");
+      table.innerHTML = "";
+
+      const selectedMonth = document.getElementById("monthFilter").value;
+      let filtered = allHistory;
+
+      if (selectedMonth) {
+        filtered = allHistory.filter(item => item.date.startsWith(selectedMonth));
+      }
+
+      if (filtered.length === 0) {
+        table.innerHTML = '<tr><td colspan="10" class="text-center p-4 text-gray-400">ไม่มีรายการ</td></tr>';
+        document.getElementById("totalSummary").textContent = "";
+        return;
+      }
+
+      let total = 0;
+      filtered.forEach((item, index) => {
+        let sum = 0;
+        if (item.usedParts && Array.isArray(item.usedParts)) {
+          sum = item.usedParts.reduce((acc, part) => acc + (part.price * (part.qty || 1)), 0);
+        }
+        total += sum;
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td class="border p-2">${index + 1}</td>
+          <td class="border p-2">${item.name}</td>
+          <td class="border p-2">${item.license}</td>
+          <td class="border p-2">${item.date}</td>
+          <td class="border p-2">${item.type}</td>
+          <td class="border p-2">${item.brand}</td>
+          <td class="border p-2">${item.problem || "-"}</td>
+          <td class="border p-2 text-green-600">${item.status}</td>
+          <td class="border p-2 text-right">${sum.toFixed(2)}</td>
+          <td class="border p-2 text-center space-x-2">
+            <button onclick="reprint(${index})" class="text-blue-600 hover:underline text-sm">พิมพ์</button>
+            <button onclick="deleteHistory(${index})" class="text-red-600 hover:underline text-sm">ลบ</button>
+          </td>
+        `;
+        table.appendChild(row);
+      });
+
+      document.getElementById("totalSummary").textContent = `🔥 รวมยอดชำระทั้งหมด: ${total.toFixed(2)} บาท`;
+    }
+
+    function deleteHistory(index) {
+      if (confirm("ต้องการลบประวัติรายการนี้หรือไม่?")) {
+        allHistory.splice(index, 1);
+        localStorage.setItem("repairHistory", JSON.stringify(allHistory));
+        filterHistory();
+      }
+    }
+
+    function reprint(index) {
+      const repair = allHistory[index];
+      localStorage.setItem("selectedRepair", JSON.stringify(repair));
+      window.location.href = "cash_bill.html";
+    }
+
+    filterHistory();
+  </script>
+</body>
+</html>

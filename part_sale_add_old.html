@@ -1,0 +1,93 @@
+<!-- part_sale_add.html -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ขายอะไหล่</title>
+  <script>
+    let cart = [];
+
+    function scanBarcode() {
+      const code = document.getElementById('barcode').value;
+      fetch('find_part_by_barcode.php?code=' + code)
+        .then(res => res.json())
+        .then(part => {
+          if (part.id) {
+            const qty = parseInt(prompt("จำนวนที่ขาย", "1"));
+            if (!isNaN(qty) && qty > 0) {
+              cart.push({ ...part, qty });
+              renderCart();
+              document.getElementById('barcode').value = ''; // clear input
+            }
+          } else {
+            alert("ไม่พบอะไหล่");
+          }
+        });
+    }
+
+    function renderCart() {
+      const tbody = document.getElementById('cart-body');
+      tbody.innerHTML = '';
+      let total = 0;
+      cart.forEach((item, i) => {
+        const row = `<tr>
+          <td>${item.name}</td>
+          <td>${item.qty}</td>
+          <td>${item.sell_price}</td>
+          <td>${item.qty * item.sell_price}</td>
+          <td><button onclick="removeItem(${i})">❌</button></td>
+        </tr>`;
+        tbody.innerHTML += row;
+        total += item.qty * item.sell_price;
+      });
+      document.getElementById('total').innerText = total;
+    }
+
+    function removeItem(index) {
+      if (confirm("ต้องการลบรายการนี้ใช่หรือไม่?")) {
+        cart.splice(index, 1);
+        renderCart();
+      }
+    }
+
+    function submitSale() {
+      const name = prompt("ชื่อลูกค้า");
+      if (!name) return;
+
+      fetch('save_part_sale.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customer_name: name, items: cart, total: parseFloat(document.getElementById('total').innerText) })
+      })
+      .then(res => res.json())
+      .then(r => {
+        alert("บันทึกเรียบร้อย เลขที่บิล: " + r.bill_no);
+        location.reload();
+      });
+    }
+  </script>
+</head>
+<body>
+  <h2>ขายอะไหล่</h2>
+  <input type="text" id="barcode" placeholder="ยิงบาร์โค้ดที่นี่" onkeydown="if(event.key==='Enter')scanBarcode()" autofocus>
+  <table border="1" cellpadding="8">
+    <thead>
+      <tr>
+        <th>ชื่ออะไหล่</th>
+        <th>จำนวน</th>
+        <th>ราคา</th>
+        <th>รวม</th>
+        <th>ลบ</th>
+      </tr>
+    </thead>
+    <tbody id="cart-body"></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4">รวมทั้งหมด</td>
+        <td id="total">0</td>
+      </tr>
+    </tfoot>
+  </table>
+  <button onclick="submitSale()">💾 บันทึกการขาย</button>
+</body>
+</html>

@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>ขายอะไหล่</title>
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: #f0f4f8;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    h2 {
+      text-align: center;
+      font-size: 36px;
+      font-weight: 600;
+      color: #007BFF;
+      margin-bottom: 20px;
+    }
+
+    .search-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .search-container input {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      outline: none;
+      transition: border 0.3s ease;
+      margin-bottom: 15px;
+    }
+
+    .search-container input:focus {
+      border-color: #007BFF;
+    }
+
+    .search-container .suggestions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      padding-top: 10px;
+    }
+
+    .suggestion-btn {
+      padding: 10px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .suggestion-btn:hover {
+      background-color: #0056b3;
+    }
+
+    #preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+
+    #part-name {
+      font-size: 22px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    #part-image {
+      width: 180px;
+      height: 180px;
+      object-fit: contain;
+      margin-bottom: 20px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    #part-description {
+      font-size: 16px;
+      color: #666;
+      text-align: center;
+      max-width: 300px;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      font-size: 16px;
+      background-color: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    table th, table td {
+      padding: 12px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+
+    table th {
+      background-color: #007BFF;
+      color: white;
+    }
+
+    .btn-action {
+      background-color: #28a745;
+      color: white;
+      padding: 12px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-action:hover {
+      background-color: #218838;
+    }
+
+    .btn-delivery {
+      background-color: #17a2b8;
+    }
+
+    .btn-delivery:hover {
+      background-color: #117a8b;
+    }
+
+    .btn-delete {
+      background-color: #dc3545;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .btn-delete:hover {
+      background-color: #c82333;
+    }
+
+    .btn-qty {
+      background-color: #007BFF;
+      color: white;
+      padding: 8px 16px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-qty:hover {
+      background-color: #0056b3;
+    }
+
+    input.qty-input {
+      width: 60px;
+      text-align: center;
+      font-size: 16px;
+      padding: 6px;
+      margin: 0 8px;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+    }
+
+    #back-button {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background-color: #007BFF;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.3s ease;
+      z-index: 999;
+    }
+
+    #back-button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <button id="back-button" onclick="window.location.href='index.html'">🔙 กลับเมนูหลัก</button>
+
+  <h2>ขายอะไหล่</h2>
+
+  <div class="search-container">
+    <input type="text" id="customerName" placeholder="ชื่อลูกค้า" />
+    <input
+      type="text"
+      id="barcode"
+      placeholder="พิมพ์ชื่ออะไหล่หรือรหัส..."
+      oninput="searchPart()"
+      autofocus
+    />
+    <div class="suggestions" id="suggestions"></div>
+  </div>
+
+  <div id="preview">
+    <h3 id="part-name"></h3>
+    <img id="part-image" src="" />
+    <p id="part-description"></p>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ชื่ออะไหล่</th>
+        <th>จำนวน</th>
+        <th>ราคา</th>
+        <th>รวม</th>
+        <th>ลบ</th>
+      </tr>
+    </thead>
+    <tbody id="cart-body"></tbody>
+    <tfoot>
+      <tr>
+        <td colspan="4" style="text-align:right;">รวมทั้งหมด</td>
+        <td id="total">0</td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <div style="text-align: center; margin-top: 20px;">
+    <button class="btn-action" onclick="submitSale('cash')">🧾 พิมพ์บิลเงินสด</button>
+    <button class="btn-action btn-delivery" onclick="submitSale('delivery')">🚚 พิมพ์บิลใบส่งของ</button>
+  </div>
+
+  <script>
+    let cart = [];
+
+    function searchPart() {
+      const code = document.getElementById('barcode').value.trim();
+      const suggestionBox = document.getElementById('suggestions');
+      suggestionBox.innerHTML = '';
+
+      if (code.length < 2) return;
+
+      fetch('find_part_by_barcode.php?code=' + encodeURIComponent(code))
+        .then((res) => res.json())
+        .then((parts) => {
+          if (parts.length === 0) {
+            suggestionBox.innerHTML = '<p style="color:#888;">ไม่พบอะไหล่</p>';
+            return;
+          }
+
+          parts.forEach((part) => {
+            const btn = document.createElement('button');
+            btn.innerText = part.name;
+            btn.classList.add('suggestion-btn');
+            btn.onclick = () => addPartToCart(part);
+            suggestionBox.appendChild(btn);
+          });
+        });
+    }
+
+    function addPartToCart(part) {
+      document.getElementById('part-name').innerText = part.name;
+      document.getElementById('part-description').innerText = part.description || '';
+
+      if (part.image) {
+        document.getElementById('part-image').src = part.image;
+        document.getElementById('part-image').style.display = 'block';
+      } else {
+        document.getElementById('part-image').style.display = 'none';
+      }
+
+      cart.push({ ...part, qty: 1 });
+      renderCart();
+      document.getElementById('barcode').value = '';
+      document.getElementById('suggestions').innerHTML = '';
+    }
+
+    function renderCart() {
+      const tbody = document.getElementById('cart-body');
+      tbody.innerHTML = '';
+      let total = 0;
+      cart.forEach((item, i) => {
+        const row = `<tr>
+          <td>${item.name}</td>
+          <td>
+            <button class="btn-qty" onclick="changeQty(${i}, -1)">➖</button>
+            <input class="qty-input" type="number" min="1" value="${item.qty}" onchange="updateQty(${i}, this.value)">
+            <button class="btn-qty" onclick="changeQty(${i}, 1)">➕</button>
+          </td>
+          <td><input class="qty-input" type="number" min="0" value="${item.sell_price}" onchange="updatePrice(${i}, this.value)"></td>
+          <td>${item.qty * item.sell_price}</td>
+          <td><button class="btn-delete" onclick="removeItem(${i})">❌</button></td>
+        </tr>`;
+        tbody.innerHTML += row;
+        total += item.qty * item.sell_price;
+      });
+      document.getElementById('total').innerText = total;
+    }
+
+    function changeQty(index, delta) {
+      cart[index].qty += delta;
+      if (cart[index].qty < 1) cart[index].qty = 1;
+      renderCart();
+    }
+
+    function updateQty(index, value) {
+      const qty = parseInt(value);
+      if (!isNaN(qty) && qty > 0) {
+        cart[index].qty = qty;
+        renderCart();
+      }
+    }
+
+    function updatePrice(index, value) {
+      const price = parseFloat(value);
+      if (!isNaN(price) && price >= 0) {
+        cart[index].sell_price = price;
+        renderCart();
+      }
+    }
+
+    function removeItem(index) {
+      if (confirm("ต้องการลบรายการนี้ใช่หรือไม่?")) {
+        cart.splice(index, 1); // ลบรายการออกจากตะกร้า
+        // ถ้าตะกร้าไม่มีอะไหล่แล้ว ให้ซ่อนรูปภาพและข้อมูลอะไหล่
+        if (cart.length === 0) {
+          document.getElementById('part-image').style.display = 'none';
+          document.getElementById('part-name').innerText = '';
+          document.getElementById('part-description').innerText = '';
+        }
+        renderCart(); // อัปเดตตะกร้า
+      }
+    }
+
+    function submitSale(type) {
+      const name = document.getElementById('customerName').value.trim();
+      if (!name) {
+        alert("กรุณากรอกชื่อลูกค้า");
+        return;
+      }
+
+      const data = {
+        customer_name: name,
+        items: cart,
+        total: parseFloat(document.getElementById('total').innerText),
+      };
+      localStorage.setItem('last_receipt', JSON.stringify(data));
+
+      if (type === 'cash') {
+        window.location.href = 'receipt.html';
+      } else if (type === 'delivery') {
+        window.location.href = 'delivery_bill.html';
+      }
+    }
+  </script>
+</body>
+</html>
