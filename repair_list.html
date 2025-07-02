@@ -3,7 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <title>รายการงานซ่อม</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.tailwindcss.com">
+    // ✅ ตรวจจับยิงบาร์โค้ด → ค้นหาอะไหล่
+    document.addEventListener("input", function (e) {
+      if (e.target && e.target.id === "barcodeInput") {
+        const barcode = e.target.value.trim();
+        if (barcode.length >= 4) {
+          fetch("find_part_by_barcode.php?code=" + encodeURIComponent(barcode))
+            .then(res => res.json())
+            .then(data => {
+              if (data && data.length > 0) {
+                const part = data[0];
+                e.target.value = part.name;
+                const parent = e.target.parentElement;
+                parent.querySelector('input[placeholder="ราคา"]').value = part.price;
+              }
+            });
+        }
+      }
+    });
+
+</script>
 </head>
 <body class="bg-gray-100 p-6">
 
@@ -96,7 +116,7 @@
       const div = document.createElement("div");
       div.className = "flex space-x-2 items-center";
       div.innerHTML = `
-        <input type="text" placeholder="ชื่ออะไหล่" value="${name}" class="flex-1 p-1 border rounded" />
+        <input type="text" placeholder="ชื่ออะไหล่" id="barcodeInput" autofocus value="${name}" class="flex-1 p-1 border rounded" />
         <input type="number" placeholder="จำนวน" value="${qty}" class="w-20 p-1 border rounded" />
         <input type="number" placeholder="ราคา" value="${price}" class="w-24 p-1 border rounded" />
         <button onclick="this.parentElement.remove()" class="text-red-600 text-sm">ลบ</button>
@@ -144,6 +164,26 @@
     }
 
     renderTable();
-  </script>
+  
+    // ✅ ตรวจจับยิงบาร์โค้ด → ค้นหาอะไหล่
+    document.addEventListener("input", function (e) {
+      if (e.target && e.target.id === "barcodeInput") {
+        const barcode = e.target.value.trim();
+        if (barcode.length >= 4) {
+          fetch("find_part_by_barcode.php?code=" + encodeURIComponent(barcode))
+            .then(res => res.json())
+            .then(data => {
+              if (data && data.length > 0) {
+                const part = data[0];
+                e.target.value = part.name;
+                const parent = e.target.parentElement;
+                parent.querySelector('input[placeholder="ราคา"]').value = part.price;
+              }
+            });
+        }
+      }
+    });
+
+</script>
 </body>
 </html>

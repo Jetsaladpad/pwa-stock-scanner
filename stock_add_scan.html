@@ -1,107 +1,120 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <title>เพิ่มอะไหล่ด้วยบาร์โค้ด</title>
+  <meta charset="UTF-8" />
+  <title>เพิ่มอะไหล่ด้วยกล้อง</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  </style>
 </head>
-<body class="bg-gray-100 text-gray-800 p-4">
-  <div class="flex justify-between items-center mb-4">
-    <h1 class="text-xl font-bold">📦 เพิ่มอะไหล่ด้วยบาร์โค้ด</h1>
-    <a href="index.html" class="text-blue-600 hover:underline">← กลับเมนูหลัก</a>
+<body class="bg-gradient-to-br from-pink-100 via-yellow-100 to-green-100 text-gray-800 font-sans">
+  <div class="w-full max-w-md mx-auto mt-12 bg-white shadow-xl rounded-2xl p-8 space-y-6 ring-1 ring-pink-200">
+    <div class="flex justify-between items-center mb-4">
+<a href="index.html" class="inline-block bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-semibold px-4 py-2 rounded-full shadow-sm transition">← กลับเมนูหลัก</a>
+      <h2 class="text-2xl font-bold text-pink-500">✨ เพิ่มอะไหล่ด้วยการสแกนบาร์โค้ด ✨</h2>
+      
+    </div>
+  
+
+  
+
+  <div class="space-y-4 mt-6">
+
+
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
+  <div class="col-span-1 sm:col-span-2">
+    <label class="block text-sm font-medium text-gray-700 mb-1">🔍 บาร์โค้ด</label>
+    <input type="text" id="barcode"
+           class="border border-gray-300 rounded-lg p-3 w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
+           placeholder="เช่น 8850000000001" autofocus />
   </div>
 
-  <button onclick="startScan()" class="bg-green-600 text-white px-4 py-2 rounded">📷 สแกนบาร์โค้ด</button>
-  <div id="reader" style="width: 300px; display: none;" class="mt-4"></div>
-
-  <div class="mt-4 text-sm">
-    <p>ผลลัพธ์ล่าสุด: <span id="lastCode" class="font-semibold text-blue-600"></span></p>
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-1">📦 ชื่ออะไหล่</label>
+    <input type="text" id="name"
+           class="border border-gray-300 rounded-lg p-3 w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
+           placeholder="เช่น ไส้กรองอากาศ" />
   </div>
 
-  <div id="manualInputs" class="mt-4 hidden space-y-2">
-    <input id="inputQty" type="number" placeholder="จำนวน" class="border p-2 rounded w-full">
-    <input id="inputPrice" type="number" placeholder="ราคา" class="border p-2 rounded w-full">
-    <button onclick="saveToStock()" class="bg-blue-600 text-white px-4 py-1 rounded">💾 บันทึกเข้าสต๊อก</button>
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-1">💰 ราคา</label>
+    <input type="number" id="price"
+           class="border border-gray-300 rounded-lg p-3 w-full shadow-sm focus:outline-none focus:ring-2 focus:ring-pink-300"
+           placeholder="เช่น 120" />
   </div>
 
-  <hr class="my-6">
-  <h2 class="text-lg font-bold mb-2">📋 รายการอะไหล่ในระบบ</h2>
-  <div id="stockList" class="space-y-2"></div>
+  <div class="col-span-1 sm:col-span-2 mt-4">
+    <button onclick="save()"
+            class="bg-gradient-to-r from-pink-500 to-yellow-400 hover:from-pink-600 hover:to-yellow-500 text-white px-6 py-3 rounded-xl w-full font-bold shadow-lg tracking-wide transition-all duration-300 ease-in-out">
+      ✅ บันทึกข้อมูลอะไหล่
+    </button>
+  </div>
+</div>
+
+
+
 
   <script>
-    let scannedCode = "";
+    
 
-    function startScan() {
-      const reader = document.getElementById("reader");
-      reader.style.display = "block";
-      const scanner = new Html5Qrcode("reader");
+    function save() {
+      const name = document.getElementById('name').value;
+      const price = document.getElementById('price').value;
+      const barcode = document.getElementById('barcode').value;
 
-      scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: 250 },
-        (code) => {
-          scanner.stop();
-          reader.style.display = "none";
-          scannedCode = code;
-          document.getElementById("lastCode").textContent = code;
-          document.getElementById("manualInputs").classList.remove("hidden");
-        },
-        (err) => {}
-      ).catch(err => alert("ไม่สามารถเปิดกล้อง: " + err));
-    }
-
-    function saveToStock() {
-      const qty = parseInt(document.getElementById("inputQty").value);
-      const price = parseFloat(document.getElementById("inputPrice").value);
-      if (!qty || isNaN(price)) return alert("กรุณากรอกจำนวนและราคาให้ครบ");
-
-      let stock = JSON.parse(localStorage.getItem("stock") || "[]");
-      if (!stock.find(item => item.code === scannedCode)) {
-        stock.push({ code: scannedCode, name: scannedCode, qty, price });
-        localStorage.setItem("stock", JSON.stringify(stock));
-        alert("✅ เพิ่มอะไหล่เข้าระบบแล้ว: " + scannedCode);
-        document.getElementById("manualInputs").classList.add("hidden");
-        document.getElementById("inputQty").value = "";
-        document.getElementById("inputPrice").value = "";
-        renderStockList();
-      } else {
-        alert("ℹ️ อะไหล่นี้มีอยู่ในระบบแล้ว");
-      }
-    }
-
-    function renderStockList() {
-      const container = document.getElementById("stockList");
-      container.innerHTML = "";
-      const stock = JSON.parse(localStorage.getItem("stock") || "[]");
-      if (stock.length === 0) {
-        container.innerHTML = '<p class="text-gray-500">ยังไม่มีรายการในสต๊อก</p>';
+      if (!name || !price || !barcode) {
+        alert("กรุณากรอกข้อมูลให้ครบ");
         return;
       }
-      stock.forEach((item, index) => {
-        const div = document.createElement("div");
-        div.className = "bg-white p-2 rounded shadow flex justify-between items-center";
-        div.innerHTML = `
-          <div>
-            <div class="font-semibold">${item.name}</div>
-            <div class="text-sm text-gray-600">จำนวน: ${item.qty} | ราคา: ${item.price} บาท</div>
-          </div>
-          <button onclick="deleteStock(${index})" class="text-red-600">ลบ</button>
-        `;
-        container.appendChild(div);
-      });
-    }
 
-    function deleteStock(index) {
-      if (!confirm("ยืนยันลบอะไหล่ชิ้นนี้?")) return;
-      let stock = JSON.parse(localStorage.getItem("stock") || "[]");
-      stock.splice(index, 1);
-      localStorage.setItem("stock", JSON.stringify(stock));
-      renderStockList();
+      fetch('add_stock.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `name=${encodeURIComponent(name)}&price=${price}&barcode=${barcode}`
+      })
+      .then(res => res.text())
+      .then(msg => alert(msg))
+      .catch(err => alert('ผิดพลาด'));
     }
-
-    renderStockList();
   </script>
+
+<div class="mt-12 border-t border-pink-200 pt-8">
+  <h3 class="text-lg font-semibold text-pink-600 mb-4">🧾 รายการที่เพิ่มแล้ว</h3>
+  <div id="itemList" class="space-y-4">
+    <!-- แต่ละรายการจะเพิ่มเข้ามาที่นี่ -->
+  </div>
+</div>
+
+</div>
+
+<script>
+  function addToList(name, price, barcode) {
+    const list = document.getElementById("itemList");
+    const div = document.createElement("div");
+    div.className = "p-4 bg-pink-50 border border-pink-200 rounded-lg shadow-sm";
+    div.innerHTML = `
+      <p><strong>📦 อะไหล่:</strong> ${name}</p>
+      <p><strong>💰 ราคา:</strong> ${price} บาท</p>
+      <p><strong>🔖 บาร์โค้ด:</strong> ${barcode}</p>
+    `;
+    list.prepend(div);
+  }
+
+  // แทรกเข้าในฟังก์ชัน save()
+  const originalSave = save;
+  save = function() {
+    const name = document.getElementById('name').value;
+    const price = document.getElementById('price').value;
+    const barcode = document.getElementById('barcode').value;
+    if (!name || !price || !barcode) {
+      alert("กรุณากรอกข้อมูลให้ครบ");
+      return;
+    }
+    addToList(name, price, barcode);
+    originalSave();
+  }
+</script>
+
 </body>
 </html>

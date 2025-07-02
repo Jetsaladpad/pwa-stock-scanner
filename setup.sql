@@ -1,0 +1,11 @@
+
+CREATE DATABASE IF NOT EXISTS garage;
+USE garage;
+
+CREATE TABLE IF NOT EXISTS stock (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(255),
+  price DECIMAL(10,2),
+  barcode VARCHAR(255),
+  quantity INT DEFAULT 0
+);

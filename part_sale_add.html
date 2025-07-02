@@ -211,13 +211,17 @@
 
   <div class="search-container">
     <input type="text" id="customerName" placeholder="ชื่อลูกค้า" />
-    <input
+    
+
+
+
+<input
       type="text"
       id="barcode"
-      placeholder="พิมพ์ชื่ออะไหล่หรือรหัส..."
+      placeholder="ยิงบาร์โค้ดที่นี่..."
       oninput="searchPart()"
       autofocus
-    />
+    / autofocus style="padding: 12px; font-size: 18px;">
     <div class="suggestions" id="suggestions"></div>
   </div>
 
@@ -353,14 +357,36 @@
       }
     }
 
-    function submitSale(type) {
+    
+
+
+
+function updateStockServerAfterSale() {
+  cart.forEach(item => {
+    fetch("deduct_stock.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: `barcode=${encodeURIComponent(item.barcode)}&qty=${item.qty}`
+    })
+    .then(res => res.text())
+    .then(msg => console.log("🛠", msg))
+    .catch(err => console.error("❌", err));
+  });
+}
+
+
+function submitSale(type) {
       const name = document.getElementById('customerName').value.trim();
       if (!name) {
         alert("กรุณากรอกชื่อลูกค้า");
         return;
       }
 
-      const data = {
+      updateStockAfterSale();
+
+    updateStockServerAfterSale();
+
+  const data = {
         customer_name: name,
         items: cart,
         total: parseFloat(document.getElementById('total').innerText),
@@ -374,5 +400,6 @@
       }
     }
   </script>
+
 </body>
 </html>
